@@ -1,13 +1,18 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import DownloadIcon from '@mui/icons-material/Download';
+import AudioFileIcon from '@mui/icons-material/AudioFile';
 import {TextField, Button, Typography, Card, CardMedia, CardContent} from '@mui/material';
 
 export default function SearchInput() {
     const [url, setURL] = React.useState('');
     const [dlBtn, setDlBtn] = React.useState({
         disabled: false,
-        label: 'DOWNLOAD'
+        label: 'DOWNLOAD MP3 320kbps'
+    });
+    const [convertBtn, setConvertBtn] = React.useState({
+        disabled: false,
+        label: 'CONVERT TO WAV'
     });
 
     const [trackData, setTrackData] = React.useState({
@@ -19,10 +24,35 @@ export default function SearchInput() {
     }) 
 
     const handleChange = () => {
-        // send to api
         fetch(`/api/download?scurl=${url}`).then(response => response.json()).then(response => {
             setTrackData(response)
         }).catch(err => console.log(err));
+    }
+
+    const convertToWav = () => {
+        if(trackData.downloadURL) {
+            setConvertBtn({
+                disabled: true,
+                label: 'LOADING...'
+            });
+            fetch(`/api/convertToWav?filePath=${trackData.downloadURL}`).then(response => {
+                console.log(response)
+                setConvertBtn({
+                    disabled: false,
+                    label: 'CONVERT TO WAV'
+                });
+                setTimeout(() => {
+                    // SHOW ADS
+                    window.open('/static/'+trackData.downloadURL.replace('mp3', 'wav'), "_blank");
+                }, 2000);
+            }).catch(err => {
+                console.log(err)
+                setConvertBtn({
+                    disabled: false,
+                    label: 'CONVERT TO WAV'
+                });
+            });
+        }
     }
 
     const handleDownload = () => {
@@ -82,6 +112,14 @@ export default function SearchInput() {
                             variant="outlined" 
                             startIcon={<DownloadIcon />}>
                                 {dlBtn.label}
+                        </Button>
+                        <Button 
+                        style={{marginLeft: '20px'}}
+                            disabled={convertBtn.disabled} 
+                            onClick={convertToWav} 
+                            variant="outlined" 
+                            startIcon={<AudioFileIcon />}>
+                                {convertBtn.label}
                         </Button>
                         </Box>
                     </Box>
