@@ -7,6 +7,7 @@ import {TextField, Button, Typography, Card, CardMedia, CardContent} from '@mui/
 
 export default function SearchInput() {
     const [url, setURL] = React.useState('');
+    const [audioBuffer, setAudioBuffer] = React.useState(null);
     const [dlBtn, setDlBtn] = React.useState({
         disabled: false,
         label: 'DOWNLOAD MP3 320kbps'
@@ -71,17 +72,80 @@ export default function SearchInput() {
         }, 3000);
     }
 
+    const readAudio = (file) => {	
+        return new Promise((resolve, reject) => {
+            var reader = new FileReader();
+            reader.readAsArrayBuffer(file);
+
+            //Resolve if audio gets loaded
+            reader.onload = function() {
+                console.log("Audio Loaded");
+                resolve(reader);
+            }
+
+            reader.onerror = function(error){
+                console.log("Error while reading audio");
+                reject(error);
+            }
+
+            reader.onabort = function(abort){
+                console.log("Aborted");
+                console.log(abort);
+                reject(abort);
+            }
+
+        })
+    }
+
     const openAudioEditor = async() => {
         let WaveSurfer = (await import("wavesurfer.js")).default;
-       
+        var RegionsPlugin = await require("wavesurfer.js/dist/plugin/wavesurfer.regions.min.js");
         const wavesurfer = WaveSurfer.create({
             container: '#waveform',
-            waveColor: 'violet',
+            waveColor: '#1976d2',
             progressColor: 'purple',
             backend: 'MediaElement',
+            plugins: [
+                RegionsPlugin.create({
+                    regionsMinLength: 2,
+                    regions: [
+                        {
+                            start: 1,
+                            end: 10,
+                            loop: true,
+                            color: 'rgb(156 200 255 / 50%)'
+                        }
+                    ],
+                    dragSelection: {
+                        slop: 5
+                    }
+                })
+            ]
         });
 
-        wavesurfer.on('ready', function () {
+        wavesurfer.on('ready', async () => {
+            let arrBuffer = null;
+
+            //Read the original Audio
+            await readAudio('http://localhost/static/'+trackData.downloadURL)
+                    .then((results) => {
+                        arrBuffer = results.result;
+                    })
+                    .catch((error) => {
+                        window.alert("Some Error occured");
+                        return;
+                    }); 
+
+            //Decode the original Audio into audioBuffer
+            await new AudioContext().decodeAudioData(arrBuffer)
+				.then((res) => {
+					setAudioBuffer(res);
+				})
+				.catch((err) => {
+					window.alert("Can't decode Audio");
+					return;
+				});
+
             wavesurfer.play();
         });
 
@@ -149,7 +213,7 @@ export default function SearchInput() {
                         </Box>
                     </Box>  
                 </Card>}
-                <div id="waveform"></div>
+                <div style={{marginTop: '25px', background: '#eee'}} id="waveform"></div>
             </Box>
         </Box>
     )
