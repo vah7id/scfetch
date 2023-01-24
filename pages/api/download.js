@@ -16,7 +16,6 @@ export default function handler(req, res) {
     })
 
     scdl.getInfo(SOUNDCLOUD_URL).then(trackData => {
-        console.log(trackData.title)
         scdl.download(SOUNDCLOUD_URL).then(stream => {
             const filePath = `${trackData.title.replace(/ /g, '')}-${trackData.id}.mp3`;
             stream.pipe(fs.createWriteStream(`./public/static/${filePath}`))

@@ -2,6 +2,7 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import DownloadIcon from '@mui/icons-material/Download';
 import AudioFileIcon from '@mui/icons-material/AudioFile';
+import ContentCutIcon from '@mui/icons-material/ContentCut';
 import {TextField, Button, Typography, Card, CardMedia, CardContent} from '@mui/material';
 
 export default function SearchInput() {
@@ -70,6 +71,23 @@ export default function SearchInput() {
         }, 3000);
     }
 
+    const openAudioEditor = async() => {
+        let WaveSurfer = (await import("wavesurfer.js")).default;
+       
+        const wavesurfer = WaveSurfer.create({
+            container: '#waveform',
+            waveColor: 'violet',
+            progressColor: 'purple',
+            backend: 'MediaElement',
+        });
+
+        wavesurfer.on('ready', function () {
+            wavesurfer.play();
+        });
+
+        wavesurfer.load('/static/'+trackData.downloadURL);
+    }
+
     return (
         <Box>
             <TextField 
@@ -106,25 +124,32 @@ export default function SearchInput() {
                         </Typography>
                         </CardContent>
                         <Box sx={{ display: 'flex', alignItems: 'center', pl: 1, pb: 2 }}>
-                        <Button 
-                            disabled={dlBtn.disabled} 
-                            onClick={handleDownload} 
-                            variant="outlined" 
-                            startIcon={<DownloadIcon />}>
-                                {dlBtn.label}
-                        </Button>
-                        <Button 
-                        style={{marginLeft: '20px'}}
-                            disabled={convertBtn.disabled} 
-                            onClick={convertToWav} 
-                            variant="outlined" 
-                            startIcon={<AudioFileIcon />}>
-                                {convertBtn.label}
-                        </Button>
+                            <Button 
+                                disabled={dlBtn.disabled} 
+                                onClick={handleDownload} 
+                                variant="outlined" 
+                                startIcon={<DownloadIcon />}>
+                                    {dlBtn.label}
+                            </Button>
+                            <Button 
+                            style={{marginLeft: '20px'}}
+                                disabled={convertBtn.disabled} 
+                                onClick={convertToWav} 
+                                variant="outlined" 
+                                startIcon={<AudioFileIcon />}>
+                                    {convertBtn.label}
+                            </Button>
+                            <Button 
+                            style={{marginLeft: '20px'}}
+                                onClick={openAudioEditor} 
+                                variant="outlined" 
+                                startIcon={<ContentCutIcon />}>
+                                    CROP (TRIM AUDIO)
+                            </Button>
                         </Box>
-                    </Box>
-                    
+                    </Box>  
                 </Card>}
+                <div id="waveform"></div>
             </Box>
         </Box>
     )
