@@ -3,11 +3,26 @@ import Box from '@mui/material/Box';
 import DownloadIcon from '@mui/icons-material/Download';
 import AudioFileIcon from '@mui/icons-material/AudioFile';
 import ContentCutIcon from '@mui/icons-material/ContentCut';
-import {TextField, Button, Typography, Card, CardMedia, CardContent} from '@mui/material';
+import SaveIcon from '@mui/icons-material/Save';
+import PlayIcon from '@mui/icons-material/PlayArrow';
+import PauseIcon from '@mui/icons-material/Pause';
+import LoopIcon from '@mui/icons-material/Loop';
+import VolumeOffIcon from '@mui/icons-material/VolumeOff';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+
+import {TextField, Button, Typography, Card, CardMedia, CardContent, BottomNavigation, BottomNavigationAction, Stack, IconButton} from '@mui/material';
 
 export default function SearchInput() {
     const [url, setURL] = React.useState('');
-    const [audioBuffer, setAudioBuffer] = React.useState(null);
+    const [wavesurfer, setWaveSurfer] = React.useState(null);
+    const [region, setRegion] = React.useState(null);
+    const [isPlaying, setPlaying] = React.useState(false);
+    const [regionPoints, setRegionPoints] = React.useState({start: 0, end: 10});
+    const [trimButtonVisible, setTrimButtonVisible] = React.useState(false);
+    const [selectedAction, setSelectedAction] = React.useState(0);
+    const [isMute, setIsMute] = React.useState(false);
+
+    
     const [dlBtn, setDlBtn] = React.useState({
         disabled: false,
         label: 'DOWNLOAD MP3 320kbps'
@@ -72,85 +87,100 @@ export default function SearchInput() {
         }, 3000);
     }
 
-    const readAudio = (file) => {	
-        return new Promise((resolve, reject) => {
-            var reader = new FileReader();
-            reader.readAsArrayBuffer(file);
-
-            //Resolve if audio gets loaded
-            reader.onload = function() {
-                console.log("Audio Loaded");
-                resolve(reader);
-            }
-
-            reader.onerror = function(error){
-                console.log("Error while reading audio");
-                reject(error);
-            }
-
-            reader.onabort = function(abort){
-                console.log("Aborted");
-                console.log(abort);
-                reject(abort);
-            }
-
-        })
-    }
-
     const openAudioEditor = async() => {
-        let WaveSurfer = (await import("wavesurfer.js")).default;
-        var RegionsPlugin = await require("wavesurfer.js/dist/plugin/wavesurfer.regions.min.js");
-        const wavesurfer = WaveSurfer.create({
-            container: '#waveform',
-            waveColor: '#1976d2',
-            progressColor: 'purple',
-            backend: 'MediaElement',
-            plugins: [
-                RegionsPlugin.create({
-                    regionsMinLength: 2,
-                    regions: [
-                        {
-                            start: 1,
-                            end: 10,
-                            loop: true,
-                            color: 'rgb(156 200 255 / 50%)'
+        if(wavesurfer === null) {
+            setTrimButtonVisible(true)
+            let WaveSurfer = (await import("wavesurfer.js")).default;
+            var RegionsPlugin = await require("wavesurfer.js/dist/plugin/wavesurfer.regions.min.js");
+            const wavesurferInstance = WaveSurfer.create({
+                container: '#waveform',
+                waveColor: '#1976d2',
+                progressColor: 'purple',
+                backend: 'MediaElement',
+                plugins: [
+                    RegionsPlugin.create({
+                        regionsMinLength: 1,
+                        regions: [
+                            {
+                                start: regionPoints.start,
+                                end: regionPoints.end,
+                                loop: true,
+                                color: 'rgb(156 200 255 / 50%)'
+                            }
+                        ],
+                        dragSelection: {
+                            slop: 5
                         }
-                    ],
-                    dragSelection: {
-                        slop: 5
-                    }
-                })
-            ]
-        });
-
-        wavesurfer.on('ready', async () => {
-            let arrBuffer = null;
-
-            //Read the original Audio
-            await readAudio('http://localhost/static/'+trackData.downloadURL)
-                    .then((results) => {
-                        arrBuffer = results.result;
                     })
-                    .catch((error) => {
-                        window.alert("Some Error occured");
-                        return;
-                    }); 
+                ]
+            });
 
-            //Decode the original Audio into audioBuffer
-            await new AudioContext().decodeAudioData(arrBuffer)
-				.then((res) => {
-					setAudioBuffer(res);
-				})
-				.catch((err) => {
-					window.alert("Can't decode Audio");
-					return;
-				});
+            wavesurferInstance.on('ready', async () => {
+                wavesurferInstance.play();
+                setPlaying(true);
+                const regionId = Object.keys(wavesurferInstance.regions.list)[0];
+                const region = wavesurferInstance.regions.list[regionId];
+                if(region) {
+                    setRegion(region);
+                }
+            });
 
-            wavesurfer.play();
-        });
+            wavesurferInstance.on('region-created', (region) => {
+                var regions = region.wavesurfer.regions.list;
+                var keys = Object.keys(regions);
+                if(keys.length > 1){
+                    regions[keys[1]].remove();
+                }
+            })
 
-        wavesurfer.load('/static/'+trackData.downloadURL);
+            wavesurferInstance.on('region-updated', (region) => {
+                var regions = region.wavesurfer.regions.list;
+                var keys = Object.keys(regions);
+                if(keys.length > 1){
+                    regions[keys[1]].remove();
+                }
+                setRegionPoints({
+                    start: region.start,
+                    end: region.end
+                })
+            })
+
+            wavesurferInstance.on('pause', () => {
+                setPlaying(false);
+            })
+
+            wavesurferInstance.on('play', () => {
+                setPlaying(true);
+            })
+
+
+            wavesurferInstance.load('/static/'+trackData.downloadURL);
+            setWaveSurfer(wavesurferInstance);
+        }
     }
+
+    const trimAudio = () => {
+        if(wavesurfer.regions) {
+            const regionId = Object.keys(wavesurfer.regions.list)[0];
+            const region = wavesurfer.regions.list[regionId];
+            if(region) {
+                wavesurfer.pause();
+                fetch(`/api/trim?filePath=${trackData.downloadURL}&start=${region.start}&duration=${region.end-region.start}`).then(response => response.json()).then(response => {
+                    var anchorAudio = document.createElement("a");
+                    anchorAudio.href = '/static/trimmed-'+trackData.downloadURL;
+                    anchorAudio.download = "trimmed-"+trackData.downloadURL;
+                    anchorAudio.click();
+                }).catch(err => console.log(err));
+            }
+            
+        }
+    }
+
+    const toggleMute = () => {
+        wavesurfer.setMute(!isMute);
+        setIsMute(!isMute);
+    }
+
 
     return (
         <Box>
@@ -214,6 +244,28 @@ export default function SearchInput() {
                     </Box>  
                 </Card>}
                 <div style={{marginTop: '25px', background: '#eee'}} id="waveform"></div>
+                {trimButtonVisible && <>
+                {/*<Typography style={{opacity: '0.7', width: '400px', float: 'left', marginTop: '24px'}} variant='body2'>Use the region handler to select your area to trim your audio, startTime and length should be specified!!</Typography>*/}
+                <Stack sx={{ width: 500, paddingTop: '20px' }} direction="row" spacing={4}>
+                    {wavesurfer &&
+                        <IconButton sx={{background: '#eee'}} onClick={() => wavesurfer.playPause()} aria-label="play">
+                            {isPlaying ? <PauseIcon /> : <PlayIcon />}
+                        </IconButton>
+                    }
+                    <IconButton sx={{background: '#eee'}} onClick={() => region.loop = !region.loop} aria-label="loop" color={(region && region?.loop === true) ? "primary" : "disabled"}>
+                        <LoopIcon />
+                    </IconButton>
+                    <IconButton sx={{background: '#eee'}} onClick={toggleMute} aria-label="add an alarm">
+                        {isMute ? <VolumeUpIcon /> : <VolumeOffIcon />}
+                    </IconButton>
+                    <Typography variant='body2'><b>Start Time:</b> {region && regionPoints.start.toPrecision(6)}</Typography>
+                    <Typography variant='body2'><b>End Time:</b> {region &&  regionPoints.end.toPrecision(6)}</Typography>
+                    <Typography variant='body2'>Length: {region && (regionPoints.end-regionPoints.start).toPrecision(6)}</Typography>
+                </Stack>
+                <Button style={{ float: 'right', marginTop: '-42px'}} onClick={trimAudio} variant='contained' startIcon={<SaveIcon />}>
+                    EXPORT
+                </Button>
+                </>}
             </Box>
         </Box>
     )
