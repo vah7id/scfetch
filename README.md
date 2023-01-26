@@ -41,6 +41,7 @@ Replace your soundcloud CLIENT_ID in /api/download.js
 
 -  Audio Mixer to adjust more properties for sampling purposes
 -  Vocal Remover tool
+-  Store Files Provider
 
 ## License
 
