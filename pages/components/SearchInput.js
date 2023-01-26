@@ -101,7 +101,7 @@ export default function SearchInput() {
                 setTimeout(() => {
                     // SHOW ADS
                     setIsFetching(false);
-                    window.open('/static/'+trackData.downloadURL.replace('mp3', 'wav'), "_blank");
+                    window.open(trackData.downloadURL.replace('mp3', 'wav'), "_blank");
                 }, 2000);
             }).catch(err => {
                 console.log(err)
@@ -123,7 +123,7 @@ export default function SearchInput() {
         })
         setTimeout(() => {
             // loading (put some ads here)
-            window.open('/static/'+trackData.downloadURL, "_blank");
+            window.open(trackData.downloadURL, "_blank");
             setDlBtn({
                 disabled: false,
                 label: 'DOWNLOAD'
@@ -199,7 +199,7 @@ export default function SearchInput() {
             })
 
 
-            wavesurferInstance.load('/static/'+trackData.downloadURL);
+            wavesurferInstance.load(trackData.downloadURL);
             setWaveSurfer(wavesurferInstance);
         }
     }
