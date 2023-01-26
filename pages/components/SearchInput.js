@@ -12,6 +12,7 @@ import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import {TextField, Button, Typography, Card, CardMedia, CardContent, BottomNavigation, BottomNavigationAction, Stack, IconButton, Skeleton, LinearProgress, Backdrop, CircularProgress} from '@mui/material';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -63,9 +64,14 @@ export default function SearchInput() {
         downloadURL: ""
     }) 
 
-    const handleChange = () => {
+    const handleChange = (targetURL) => {
+        if(wavesurfer) {
+            wavesurfer.destroy();
+            setWaveSurfer(null);
+        }
         setIsFetching(true);
-        fetch(`/api/download?scurl=${url}`).then(response => response.json()).then(response => {
+        setTrimButtonVisible(false);
+        fetch(`/api/download?scurl=${targetURL || url}`).then(response => response.json()).then(response => {
             setIsFetching(false);
             if(response.err) {
                 showNotification('error', response.err.message);
@@ -227,6 +233,9 @@ export default function SearchInput() {
         setIsMute(!isMute);
     }
 
+    const handlePaste = (event) => {
+        handleChange(event.clipboardData.getData('text/plain'));
+    }
 
     return (
         <Box>
@@ -235,19 +244,25 @@ export default function SearchInput() {
                     value={url} 
                     onChange={(event) => setURL(event.target.value)} 
                     id="filled-basic" 
+                    onPaste={handlePaste}
                     style={{ width: '768px'}} 
-                    label="SoundCloud URL here to download..." 
+                    label="Paste the SoundCloud URL here to download..." 
                     variant="filled" 
                 />
                 <Button 
-                    onClick={handleChange} 
+                    onClick={() => handleChange(url)} 
                     size='large'  
                     style={{ padding: '15px', marginLeft: '20px'}} 
                     variant='contained'
                     >
                         Fetch
                 </Button>
-                {isFetching && <Box sx={{ width: '100%' }}>
+                <Box sx={{ width: '100%', mt: '10px', opacity: '0.3', fontSize: '14px' }}>
+                    <Typography variant="subtitle">
+                        https://soundcloud.com/artist/track-name
+                    </Typography>
+                </Box>
+                {isFetching && <Box sx={{ width: '100%', mt: '15px' }}>
                     <LinearProgress />
                 </Box>}
             </Box>
@@ -262,7 +277,7 @@ export default function SearchInput() {
                     />
                     <Box sx={{  display: 'flex', flexDirection: 'column' }}>
                         <CardContent sx={{ flex: '1 0 auto' }}>
-                            <Typography component="div" variant="h5">
+                            <Typography component="div" style={{maxWidth: '600px'}} variant="h5">
                                 {trackData.title}
                             </Typography>
                         <Typography variant="subtitle1" color="text.secondary" component="div">
@@ -325,9 +340,14 @@ export default function SearchInput() {
                     <Typography variant='body2'><b>End Time:</b> {region &&  regionPoints.end.toPrecision(6)}</Typography>
                     <Typography variant='body2'>Length: {region && (regionPoints.end-regionPoints.start).toPrecision(6)}</Typography>
                 </Stack>
+                
                 <Button color="success" style={{ float: 'right', marginTop: '-42px'}} onClick={trimAudio} variant='contained' startIcon={<SaveIcon />}>
                     EXPORT
                 </Button>
+                <Button color="info" style={{ float: 'right', marginRight: '120px', marginTop: '-42px', }} disabled variant='contained' startIcon={<SettingsIcon />}>
+                    MIXER
+                </Button>
+                <Alert style={{marginTop: '25px', padding: '5px 10px', boxShadow: 'none', opacity:"0.6"}} variant="outlined" severity="info">Adjust the blue area by using your mouse to set the start and end time to crop!</Alert>
                 </>}
             </Box>
 
@@ -339,7 +359,7 @@ export default function SearchInput() {
             
             {isFetching && <Backdrop
                 sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-                open={open}
+                open={isFetching}
                 >
                 <CircularProgress color="inherit" />
             </Backdrop>}
