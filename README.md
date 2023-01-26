@@ -1,4 +1,4 @@
-# SCFetch: Soundcloud URL Downloader & Sampler
+# SCFetch
       
 
 Download High Quality Mp3 (128 & 320 kbps) and WAV (raw) format from Soundcloud Using SCFetch &
@@ -36,6 +36,11 @@ npm run dev
 ## ClientID
 
 Replace your soundcloud CLIENT_ID in /api/download.js
+
+## Upcoming 
+
+-  Audio Mixer to adjust more properties for sampling purposes
+-  Vocal Remover tool
 
 ## License
 
