@@ -4,7 +4,7 @@
 Download High Quality Mp3 (128 & 320 kbps) and WAV (raw) format from Soundcloud Using SCFetch &
 easily trim your audio by crop tool for sampling purposes! Enjoy :)
 
-![Screenshot](https://im.ge/i/Screenshot-2023-01-26-at-16-46-05.svCWxz)
+![Screenshot](https://i.im.ge/2023/01/26/svCWxz.Screenshot-2023-01-26-at-16-46-05.png)
 
 
 ## Getting Started
