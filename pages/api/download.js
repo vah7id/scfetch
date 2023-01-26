@@ -6,7 +6,7 @@ const axios = require('axios').default
 
 export default function handler(req, res) {
     const SOUNDCLOUD_URL = req.query.scurl;
-    const CLIENT_ID = 'JXeKNif7tC7NuruSw0nHwNufIKolDMtS'
+    const CLIENT_ID = ''
 
     scdl.getInfo(SOUNDCLOUD_URL,CLIENT_ID).then(trackData => {
         scdl.download(SOUNDCLOUD_URL,CLIENT_ID).then(stream => {

@@ -323,7 +323,6 @@ export default function SearchInput() {
                 </>}
                 <div style={{marginTop: '25px', background: '#eee'}} id="waveform"></div>
                 {trimButtonVisible && <>
-                {/*<Typography style={{opacity: '0.7', width: '400px', float: 'left', marginTop: '24px'}} variant='body2'>Use the region handler to select your area to trim your audio, startTime and length should be specified!!</Typography>*/}
                 <Stack sx={{ width: 500, paddingTop: '20px' }} direction="row" spacing={4}>
                     {wavesurfer &&
                         <IconButton sx={{background: '#eee'}} onClick={() => wavesurfer.playPause()} aria-label="play">
