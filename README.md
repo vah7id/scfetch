@@ -1,5 +1,10 @@
-# SCFetch: Soundcloud URL Downloader
+# SCFetch: Soundcloud URL Downloader & Sampler
+      
 
+Download High Quality Mp3 (128 & 320 kbps) and WAV (raw) format from Soundcloud Using SCFetch &
+easily trim your audio by crop tool for sampling purposes! Enjoy :)
+      
+      
 ## Getting Started
 
 Clone project and enter in folder:
