@@ -320,11 +320,6 @@ export default function SearchInput() {
     }
 
     const trimAudio = () => {
-       // fetch('/api/downloadAsBlob?filePath='+trackData.downloadURL).then(resp => resp.blob()).then(bjoo => {
-
-       // })
-
-      
         if(wavesurfer.regions) {
             setIsFetching(true);
 
@@ -337,13 +332,15 @@ export default function SearchInput() {
 
             if(region) {
                 wavesurfer.pause();
-                fetch(`/api/trim?filePath=${trackData.downloadURL}&start=${region.start}&duration=${region.end - region.start}`).then(response => response.blob()).then(response => {
-                    console.log(response)
-                    var anchorAudio = document.createElement("a");
-                    anchorAudio.href = URL.createObjectURL(response);
-                    anchorAudio.download = "trimmed-"+trackData.downloadURL;
-                    anchorAudio.click();
-                    setIsFetching(false);
+                fetch(`/api/trim?filePath=${trackData.downloadURL}&start=${region.start}&duration=${region.end - region.start}`).then(response => response.json()).then(response => {
+                    setTimeout(() => {
+                        var anchorAudio = document.createElement("a");
+                        anchorAudio.href = 'https://storage.cloud.google.com/scfetch2/'+response.trimmedURL
+                        anchorAudio.download = response.trimmedURL;
+                        anchorAudio.click();
+                        setIsFetching(false);
+                    }, 3000);
+             
                 }).catch(err => {
                     showNotification('error', 'Oopss, It seems there was an issue with trimming the origin file! Please try a again!!');
                     console.log(err)
