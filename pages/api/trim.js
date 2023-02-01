@@ -4,6 +4,7 @@ const ffmpeg = require('fluent-ffmpeg');
 const {Storage} = require('@google-cloud/storage');
 const stream = require('stream');
 const fs = require('fs')
+import path from 'path'
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 // console.log(ffmpegInstaller.path, ffmpegInstaller.version);
 
@@ -13,7 +14,8 @@ export default async function handler(req, res) {
     const sourceAudioFile = req.query.filePath;
     const start = req.query.start;
     const duration = req.query.duration;
-    const storage = new Storage({projectId: 'scfetch-375920', keyFilename:'./key.json'});
+    const rootDir = path.join(process.cwd(), '/');
+    const storage = new Storage({projectId: 'scfetch-375920', keyFilename:path.join(rootDir, 'key.json')});
     const myBucket = storage.bucket('scfetch2');
     const tmp1 =  `./tmp/tmp${sourceAudioFile}`
 

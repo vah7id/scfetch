@@ -9,7 +9,7 @@ const stream = require('stream');
 
 export default function handler(req, res) {
     const SOUNDCLOUD_URL = req.query.scurl;
-    const CLIENT_ID = ''
+    const CLIENT_ID = process.env.CLIENT_ID;
     const storage = new Storage({projectId: 'scfetch-375920', keyFilename:'./key.json'});
     const myBucket = storage.bucket('scfetch2');
 
