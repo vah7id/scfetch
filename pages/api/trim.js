@@ -40,27 +40,15 @@ export default async function handler(req, res) {
     })
     .on("end", function(err) {
         if (!err) {
-             // Create a reference to a file object
-    const file = myBucket.file("./tmp/trimmed-"+sourceAudioFile);
 
-    // Create a pass through stream from a string
-    const passthroughStream = new stream.PassThrough();
-    passthroughStream.write(contents);
-    passthroughStream.end();
 
-    async function streamFileUpload() {
-        passthroughStream.pipe(file.createWriteStream()).on('finish', () => {
-        // The file upload is complete
-        });
+            const file = myBucket.file("trimmed-"+sourceAudioFile);
+            stream.pipe(file.createWriteStream());
+            
+            
         res.status(200).json({trimmedURL: "./tmp/trimmed-"+sourceAudioFile});
-
-        console.log(`${destFileName} uploaded to ${bucketName}`);
-    }
-
-    streamFileUpload().catch(console.error);
         }
-    })
-    .saveToFile("./tmp/trimmed-"+sourceAudioFile);
+    }).saveToFile("./tmp/trimmed-"+sourceAudioFile);
 
    
   }
