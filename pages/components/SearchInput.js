@@ -87,31 +87,21 @@ export default function SearchInput() {
     }
 
     const convertToWav = () => {
-        if(trackData.downloadURL) {
+        if(trackData.downloadURL !== "") {
             setIsFetching(true);
-            setConvertBtn({
+            setDlBtn({
                 disabled: true,
                 label: 'LOADING...'
-            });
-            fetch(`/api/convertToWav?filePath=${trackData.downloadURL}`).then(response => {
-                setConvertBtn({
+            })
+            setTimeout(() => {
+                // loading (put some ads here)
+                window.open('https://storage.cloud.google.com/scfetch2/'+trackData.downloadURL.replace('mp3','wav'), "_blank");
+                setDlBtn({
                     disabled: false,
-                    label: 'CONVERT TO WAV'
-                });
-                setTimeout(() => {
-                    // SHOW ADS
-                    setIsFetching(false);
-                    window.open(trackData.downloadURL.replace('mp3', 'wav'), "_blank");
-                }, 2000);
-            }).catch(err => {
-                console.log(err)
+                    label: 'DOWNLOAD'
+                })
                 setIsFetching(false);
-                showNotification('error', 'Oopss, It seems there was an issue with converting the origin file! Please try a again!!');
-                setConvertBtn({
-                    disabled: false,
-                    label: 'CONVERT TO WAV'
-                });
-            });
+            }, 3000);
         }
     }
 
@@ -123,7 +113,7 @@ export default function SearchInput() {
         })
         setTimeout(() => {
             // loading (put some ads here)
-            window.open(trackData.downloadURL, "_blank");
+            window.open('https://storage.cloud.google.com/scfetch2/'+trackData.downloadURL, "_blank");
             setDlBtn({
                 disabled: false,
                 label: 'DOWNLOAD'
@@ -132,8 +122,11 @@ export default function SearchInput() {
         }, 3000);
     }
 
+
     const openAudioEditor = async() => {
+        
         if(wavesurfer === null) {
+            setIsFetching(true);
             setTrimButtonVisible(true)
             let WaveSurfer = (await import("wavesurfer.js")).default;
             var RegionsPlugin = await require("wavesurfer.js/dist/plugin/wavesurfer.regions.min.js");
@@ -160,14 +153,21 @@ export default function SearchInput() {
                 ]
             });
 
+
+            
+            wavesurferInstance.load('https://storage.cloud.google.com/scfetch2/'+trackData.downloadURL, [
+                0.0218, 0.0183, 0.0165, 0.0198, 0.2137, 0.2888, 0.2313, 0.15, 0.2542, 0.2538, 0.2358, 0.1195, 0.1591, 0.2599, 0.2742, 0.1447, 0.2328, 0.1878, 0.1988, 0.1645, 0.1218, 0.2005, 0.2828, 0.2051, 0.1664, 0.1181, 0.1621, 0.2966, 0.189, 0.246, 0.2445, 0.1621, 0.1618, 0.189, 0.2354, 0.1561, 0.1638, 0.2799, 0.0923, 0.1659, 0.1675, 0.1268, 0.0984, 0.0997, 0.1248, 0.1495, 0.1431, 0.1236, 0.1755, 0.1183, 0.1349, 0.1018, 0.1109, 0.1833, 0.1813, 0.1422, 0.0961, 0.1191, 0.0791, 0.0631, 0.0315, 0.0157, 0.0166, 0.0108]);
+            
             wavesurferInstance.on('ready', async () => {
-                wavesurferInstance.play();
-                setPlaying(true);
-                const regionId = Object.keys(wavesurferInstance.regions.list)[0];
-                const region = wavesurferInstance.regions.list[regionId];
-                if(region) {
-                    setRegion(region);
-                }
+                console.log('ready')
+                    wavesurferInstance.play();
+                    setPlaying(true);
+                    setIsFetching(false);
+                    const regionId = Object.keys(wavesurferInstance.regions.list)[0];
+                    const region = wavesurferInstance.regions.list[regionId];
+                    if(region) {
+                        setRegion(region);
+                    }
             });
 
             wavesurferInstance.on('region-created', (region) => {
@@ -199,7 +199,6 @@ export default function SearchInput() {
             })
 
 
-            wavesurferInstance.load(trackData.downloadURL);
             setWaveSurfer(wavesurferInstance);
         }
     }
@@ -214,7 +213,7 @@ export default function SearchInput() {
                 wavesurfer.pause();
                 fetch(`/api/trim?filePath=${trackData.downloadURL}&start=${region.start}&duration=${region.end-region.start}`).then(response => response.json()).then(response => {
                     var anchorAudio = document.createElement("a");
-                    anchorAudio.href = '/static/trimmed-'+trackData.downloadURL;
+                    anchorAudio.href = 'https://storage.cloud.google.com/scfetch2/'+"trimmed-"+trackData.downloadURL;
                     anchorAudio.download = "trimmed-"+trackData.downloadURL;
                     anchorAudio.click();
                     setIsFetching(false);
@@ -321,7 +320,9 @@ export default function SearchInput() {
                     </Box>
                     </>}
                 </>}
+                
                 <div style={{marginTop: '25px', background: '#eee'}} id="waveform"></div>
+                
                 {trimButtonVisible && <>
                 <Stack sx={{ width: 500, paddingTop: '20px' }} direction="row" spacing={4}>
                     {wavesurfer &&

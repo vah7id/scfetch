@@ -13,7 +13,8 @@ function isMp3File(wavFilename) {
     return ext === ".mp3";
   }
 
-function convertWavToMp3(mp3filePath) {
+function convertWavToWAV(mp3filePath) {
+    
     return new Promise((resolve, reject) => {
         if (!isMp3File(mp3filePath)) {
             throw new Error(`Not a mp3 file`);
@@ -32,10 +33,8 @@ function convertWavToMp3(mp3filePath) {
 
 export default async function handler(req, res) {
     const sourceAudioFile = req.query.filePath;
-    console.log(sourceAudioFile)
-    console.log('./public/static/'+sourceAudioFile)
    
-    convertWavToMp3('./public/static/'+sourceAudioFile).then((wavFile => {
+    convertWavToWAV('https://storage.cloud.google.com/scfetch2/'+sourceAudioFile).then((wavFile => {
         res.status(200).json(wavFile);
     })).catch((err) => {
         console.log(err)

@@ -16,16 +16,19 @@ export default function handler(req, res) {
     scdl.getInfo(SOUNDCLOUD_URL,CLIENT_ID).then(trackData => {
         scdl.download(SOUNDCLOUD_URL,CLIENT_ID).then(async(stream) => {
             const filePath = `${trackData.title.replace(/ /g, '')}-${trackData.id}.mp3`;
-            
+            const filePath2 = `${trackData.title.replace(/ /g, '')}-${trackData.id}.wav`;
             const file = myBucket.file(filePath);
+            const file2 = myBucket.file(filePath2);
             stream.pipe(file.createWriteStream());
+            stream.pipe(file2.createWriteStream());
+
 
             res.status(200).json({ 
                 artist: trackData.user.username, 
                 title: trackData.title,
                 artwork: trackData.artwork_url, 
                 id: trackData.id,
-                downloadURL: 'https://storage.cloud.google.com/scfetch2/'+filePath 
+                downloadURL: filePath 
             }); 
 
             /*const passthroughStream = new stream.PassThrough();
