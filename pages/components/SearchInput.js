@@ -14,6 +14,123 @@ import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import {TextField, Button, Typography, Card, CardMedia, CardContent, BottomNavigation, BottomNavigationAction, Stack, IconButton, Skeleton, LinearProgress, Backdrop, CircularProgress} from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
 
+function downloadMp3(buffer) {
+    console.log(buffer)
+    var MP3Blob = analyzeAudioBuffer(buffer);
+    console.log('here is your mp3 url:');
+    console.log(URL.createObjectURL(MP3Blob));
+  }
+  
+  function analyzeAudioBuffer(aBuffer) {
+      let numOfChan = aBuffer.numberOfChannels,
+          btwLength = aBuffer.length * numOfChan * 2 + 44,
+          btwArrBuff = new ArrayBuffer(btwLength),
+          btwView = new DataView(btwArrBuff),
+          btwChnls = [],
+          btwIndex,
+          btwSample,
+          btwOffset = 0,
+          btwPos = 0;
+      setUint32(0x46464952); // "RIFF"
+      setUint32(btwLength - 8); // file length - 8
+      setUint32(0x45564157); // "WAVE"
+      setUint32(0x20746d66); // "fmt " chunk
+      setUint32(16); // length = 16
+      setUint16(1); // PCM (uncompressed)
+      setUint16(numOfChan);
+      setUint32(aBuffer.sampleRate);
+      setUint32(aBuffer.sampleRate * 2 * numOfChan); // avg. bytes/sec
+      setUint16(numOfChan * 2); // block-align
+      setUint16(16); // 16-bit
+      setUint32(0x61746164); // "data" - chunk
+      setUint32(btwLength - btwPos - 4); // chunk length
+  
+      for (btwIndex = 0; btwIndex < aBuffer.numberOfChannels; btwIndex++)
+          btwChnls.push(aBuffer.getChannelData(btwIndex));
+  
+      while (btwPos < btwLength) {
+          for (btwIndex = 0; btwIndex < numOfChan; btwIndex++) {
+              // interleave btwChnls
+              btwSample = Math.max(-1, Math.min(1, btwChnls[btwIndex][btwOffset])); // clamp
+              btwSample = (0.5 + btwSample < 0 ? btwSample * 32768 : btwSample * 32767) | 0; // scale to 16-bit signed int
+              btwView.setInt16(btwPos, btwSample, true); // write 16-bit sample
+              btwPos += 2;
+          }
+          btwOffset++; // next source sample
+      }
+  
+      let wavHdr = lamejs.WavHeader.readHeader(new DataView(btwArrBuff));
+  
+      //Stereo
+      let data = new Int16Array(btwArrBuff, wavHdr.dataOffset, wavHdr.dataLen / 2);
+      let leftData = [];
+      let rightData = [];
+      for (let i = 0; i < data.length; i += 2) {
+                   leftData.push(data[i]);
+                   rightData.push(data[i + 1]);
+      }
+      var left = new Int16Array(leftData);
+      var right = new Int16Array(rightData);
+  
+  
+  
+      //STEREO
+      if (wavHdr.channels===2)
+          return bufferToMp3(wavHdr.channels, wavHdr.sampleRate,  left,right);
+      //MONO
+      else if (wavHdr.channels===1)
+          return bufferToMp3(wavHdr.channels, wavHdr.sampleRate,  data);
+      
+  
+      function setUint16(data) {
+          btwView.setUint16(btwPos, data, true);
+          btwPos += 2;
+      }
+  
+      function setUint32(data) {
+          btwView.setUint32(btwPos, data, true);
+          btwPos += 4;
+      }
+    }
+  
+    function bufferToMp3(channels, sampleRate, left, right = null) {
+      var buffer = [];
+      var mp3enc = new lamejs.Mp3Encoder(channels, sampleRate, 128);
+      var remaining = left.length;
+      var samplesPerFrame = 1152;
+    
+    
+      for (var i = 0; remaining >= samplesPerFrame; i += samplesPerFrame) {
+    
+          if (!right)
+          {
+              var mono = left.subarray(i, i + samplesPerFrame);
+              var mp3buf = mp3enc.encodeBuffer(mono);
+          }
+          else {
+              var leftChunk = left.subarray(i, i + samplesPerFrame);
+              var rightChunk = right.subarray(i, i + samplesPerFrame);
+              var mp3buf = mp3enc.encodeBuffer(leftChunk,rightChunk);
+          }
+              if (mp3buf.length > 0) {
+                      buffer.push(mp3buf);//new Int8Array(mp3buf));
+              }
+              remaining -= samplesPerFrame;
+      }
+      var d = mp3enc.flush();
+      if(d.length > 0){
+              buffer.push(new Int8Array(d));
+      }
+    
+      var mp3Blob = new Blob(buffer, {type: 'audio/mpeg'});
+      //var bUrl = window.URL.createObjectURL(mp3Blob);
+    
+      // send the download link to the console
+      //console.log('mp3 download:', bUrl);
+      return mp3Blob;
+    
+    }
+
 const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
@@ -154,9 +271,8 @@ export default function SearchInput() {
             });
 
 
-            
-            wavesurferInstance.load('https://storage.cloud.google.com/scfetch2/'+trackData.downloadURL, [
-                0.0218, 0.0183, 0.0165, 0.0198, 0.2137, 0.2888, 0.2313, 0.15, 0.2542, 0.2538, 0.2358, 0.1195, 0.1591, 0.2599, 0.2742, 0.1447, 0.2328, 0.1878, 0.1988, 0.1645, 0.1218, 0.2005, 0.2828, 0.2051, 0.1664, 0.1181, 0.1621, 0.2966, 0.189, 0.246, 0.2445, 0.1621, 0.1618, 0.189, 0.2354, 0.1561, 0.1638, 0.2799, 0.0923, 0.1659, 0.1675, 0.1268, 0.0984, 0.0997, 0.1248, 0.1495, 0.1431, 0.1236, 0.1755, 0.1183, 0.1349, 0.1018, 0.1109, 0.1833, 0.1813, 0.1422, 0.0961, 0.1191, 0.0791, 0.0631, 0.0315, 0.0157, 0.0166, 0.0108]);
+           wavesurferInstance.load('https://storage.cloud.google.com/scfetch2/'+trackData.downloadURL, [
+           0.0218, 0.0183, 0.0165, 0.0198, 0.2137, 0.2888, 0.2313, 0.15, 0.2542, 0.2538, 0.2358, 0.1195, 0.1591, 0.2599, 0.2742, 0.1447, 0.2328, 0.1878, 0.1988, 0.1645, 0.1218, 0.2005, 0.2828, 0.2051, 0.1664, 0.1181, 0.1621, 0.2966, 0.189, 0.246, 0.2445, 0.1621, 0.1618, 0.189, 0.2354, 0.1561, 0.1638, 0.2799, 0.0923, 0.1659, 0.1675, 0.1268, 0.0984, 0.0997, 0.1248, 0.1495, 0.1431, 0.1236, 0.1755, 0.1183, 0.1349, 0.1018, 0.1109, 0.1833, 0.1813, 0.1422, 0.0961, 0.1191, 0.0791, 0.0631, 0.0315, 0.0157, 0.0166, 0.0108]);
             
             wavesurferInstance.on('ready', async () => {
                 console.log('ready')
@@ -204,16 +320,27 @@ export default function SearchInput() {
     }
 
     const trimAudio = () => {
+       // fetch('/api/downloadAsBlob?filePath='+trackData.downloadURL).then(resp => resp.blob()).then(bjoo => {
+
+       // })
+
+      
         if(wavesurfer.regions) {
             setIsFetching(true);
 
             const regionId = Object.keys(wavesurfer.regions.list)[0];
             const region = wavesurfer.regions.list[regionId];
+
+            const startTimeBytesPosition = (44,100 * region.start) * 2 * 2;
+            const endTimeBytesPosition = (44,100 * region.end) * 2 * 2;
+
+
             if(region) {
                 wavesurfer.pause();
-                fetch(`/api/trim?filePath=${trackData.downloadURL}&start=${region.start}&duration=${region.end-region.start}`).then(response => response.json()).then(response => {
+                fetch(`/api/trim?filePath=${trackData.downloadURL}&start=${region.start}&duration=${region.end - region.start}`).then(response => response.blob()).then(response => {
+                    console.log(response)
                     var anchorAudio = document.createElement("a");
-                    anchorAudio.href = 'https://storage.cloud.google.com/scfetch2/'+"trimmed-"+trackData.downloadURL;
+                    anchorAudio.href = URL.createObjectURL(response);
                     anchorAudio.download = "trimmed-"+trackData.downloadURL;
                     anchorAudio.click();
                     setIsFetching(false);
