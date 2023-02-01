@@ -15,21 +15,23 @@ export default async function handler(req, res) {
     const start = req.query.start;
     const duration = req.query.duration;
     const rootDir = path.join(process.cwd(), '/');
+    const tmpDir = path.join(process.cwd(), '/tmp');
+
     const storage = new Storage({projectId: 'scfetch-375920', keyFilename:path.join(rootDir, 'key.json')});
     const myBucket = storage.bucket('scfetch2');
-    const tmp1 =  `./tmp/tmp${sourceAudioFile}`
+    const tmp1 =  `tmp${sourceAudioFile}`
 
     const options = {
-        destination: tmp1,
+        destination: path.join(tmpDir, tmp1),
       };
   
       // Downloads the file
       await myBucket.file(sourceAudioFile).download(options);
 
     
-    const destFileTmp = "./tmp/trimmed-"+sourceAudioFile
+    const destFileTmp = path.join(tmpDir, `tmp${sourceAudioFile}`)
     const destFileCloud = "trimmed-"+new Date().getTime()+sourceAudioFile;
-    const conv = ffmpeg({ source: tmp1});
+    const conv = ffmpeg({ source: path.join(tmpDir, tmp1)});
     conv
     .setStartTime(start) //Can be in "HH:MM:SS" format also
     .setDuration(duration) 
@@ -42,7 +44,6 @@ export default async function handler(req, res) {
     })
     .on("end", function(err) {
         if (!err) {
-            var strings = fs.readFileSync(destFileTmp).toString();
             async function uploadFromMemory() {
                 await myBucket.upload(destFileTmp, {destination: destFileCloud});
               }
