@@ -228,15 +228,31 @@ export default function SearchInput() {
             disabled: true,
             label: 'LOADING...'
         })
-        setTimeout(() => {
-            // loading (put some ads here)
-            window.open('https://storage.cloud.google.com/scfetch2/'+trackData.downloadURL, "_blank");
-            setDlBtn({
-                disabled: false,
-                label: 'DOWNLOAD'
-            })
+        fetch(`/api/downloadStream?scurl=${url}&title=`+trackData.downloadURL).then(response => response.json()).then(response => {
             setIsFetching(false);
-        }, 3000);
+            if(response.err) {
+                setDlBtn({
+                    disabled: false,
+                    label: 'DOWNLOAD'
+                })
+                showNotification('error', response.err.message);
+                setIsFetching(false);
+                showNotification('error', 'Oops, Unfortunately we cannot fetch the URL!! Please try again!!!');
+            } else {
+                setTimeout(() => {
+                    window.open('https://storage.cloud.google.com/scfetch2/'+response.downloadURL, "_blank");
+                    setDlBtn({
+                        disabled: false,
+                        label: 'DOWNLOAD'
+                    })
+                    setIsFetching(false);
+                }, 3000);
+            }
+        }).catch(err => {
+            console.log(err.message)
+            setIsFetching(false);
+            showNotification('error', 'Oops, Unfortunately we cannot fetch the URL!! Please try again!!!');
+        });
     }
 
 

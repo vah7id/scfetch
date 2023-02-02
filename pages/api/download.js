@@ -16,13 +16,13 @@ export default function handler(req, res) {
     const myBucket = storage.bucket('scfetch2');
 
     scdl.getInfo(SOUNDCLOUD_URL,CLIENT_ID).then(trackData => {
-        scdl.download(SOUNDCLOUD_URL,CLIENT_ID).then(async(stream) => {
+        //scdl.download(SOUNDCLOUD_URL,CLIENT_ID).then(async(stream) => {
             const filePath = `${trackData.title.replace(/ /g, '')}-${trackData.id}.mp3`;
-            const filePath2 = `${trackData.title.replace(/ /g, '')}-${trackData.id}.wav`;
-            const file = myBucket.file(filePath);
-            const file2 = myBucket.file(filePath2);
-            stream.pipe(file.createWriteStream());
-            stream.pipe(file2.createWriteStream());
+            //const filePath2 = `${trackData.title.replace(/ /g, '')}-${trackData.id}.wav`;
+            //const file = myBucket.file(filePath);
+            //const file2 = myBucket.file(filePath2);
+            //stream.pipe(file.createWriteStream());
+            //stream.pipe(file2.createWriteStream());
 
 
             res.status(200).json({ 
@@ -57,7 +57,7 @@ export default function handler(req, res) {
               streamFileUpload().catch(console.error);*/
             //stream.pipe(fs.createWriteStream(path.join(cwd, filePath)))
             
-        }).catch(err => res.status(400).json({ err }))
+        //}).catch(err => res.status(400).json({ err }))
     }).catch(err => {
         res.status(400).json({ err });    
     })
