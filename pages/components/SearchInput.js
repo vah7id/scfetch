@@ -359,7 +359,7 @@ export default function SearchInput() {
                         anchorAudio.download = response.trimmedURL;
                         anchorAudio.click();
                         setIsFetching(false);
-                    }, 8000);
+                    }, 5000);
              
                 }).catch(err => {
                     showNotification('error', 'Oopss, It seems there was an issue with trimming the origin file! Please try a again!!');
