@@ -151,7 +151,7 @@ export default function SearchInput() {
     const showNotification = (type, message) => {
         setSnackbarOpen(true);
         setNotification({
-            type: 'error',
+            type: type,
             message
         })
     };
@@ -220,6 +220,8 @@ export default function SearchInput() {
                 setIsFetching(false);
                 showNotification('error', 'Oops, Unfortunately we cannot fetch the URL!! Please try again!!!');
             } else {
+                showNotification('info','Audio has been converted to Wav file successfully!')
+
                 setTimeout(() => {
                     //window.open('https://storage.cloud.google.com/scfetch2/'+response.downloadURL.replace('mp3','wav'), "_blank");
                     setConvertBtn({
@@ -227,12 +229,13 @@ export default function SearchInput() {
                         label: 'CONVERT TO WAV'
                     })
                     setIsFetching(false);
+                    openSnackbar()
                     const anchorAudio = document.createElement("a");
                     anchorAudio.target = "_blank";
                     anchorAudio.href = 'https://storage.cloud.google.com/scfetch2/'+response.downloadURL.replace('mp3','wav');
                     anchorAudio.download = "trimmed-"+response.downloadURL.replace('mp3','wav');
                     anchorAudio.click();
-                }, 3000);
+                }, 1000);
             }
         }).catch(err => {
             setConvertBtn({
@@ -258,10 +261,13 @@ export default function SearchInput() {
                     disabled: false,
                     label: 'DOWNLOAD'
                 })
+                
                 showNotification('error', response.err.message);
                 setIsFetching(false);
                 showNotification('error', 'Oops, Unfortunately we cannot fetch the URL!! Please try again!!!');
             } else {
+                showNotification('info', 'Download starts in 2 seconds... enjoy :)')
+
                 setTimeout(() => {
                     //window.open('https://storage.cloud.google.com/scfetch2/'+response.downloadURL, "_blank");
                     setDlBtn({
@@ -269,10 +275,11 @@ export default function SearchInput() {
                         label: 'DOWNLOAD'
                     })
                     setIsFetching(false);
+
                     const anchorAudio = document.createElement("a");
                     anchorAudio.target = "_blank";
                     anchorAudio.href = 'https://storage.cloud.google.com/scfetch2/'+response.downloadURL;
-                    anchorAudio.download = "trimmed-"+response.downloadURL;
+                    anchorAudio.download = response.downloadURL;
                     anchorAudio.click();
                 }, 3000);
             }
@@ -284,18 +291,6 @@ export default function SearchInput() {
             console.log(err.message)
             setIsFetching(false);
             showNotification('error', 'Oops, Unfortunately we cannot fetch the URL!! Please try again!!!');
-        });
-    }
-
-    const donwloadInBackground = () => {
-        return fetch(`/api/downloadStream?scurl=${url}&title=`+trackData.downloadURL).then(response => response.json()).then(response => {
-            if(response.err) {
-               return {status: 'failed'};
-            } else {
-                return {status: 'success'};
-            }
-        }).catch(err => {
-            return {status: 'failed'};
         });
     }
 
@@ -403,6 +398,7 @@ export default function SearchInput() {
             if(region) {
                 wavesurfer.pause();
                 fetch(`/api/trim?filePath=${trackData.downloadURL}&start=${region.start}&duration=${region.end - region.start}`).then(response => response.json()).then(response => {
+                    showNotification('info', 'Download starts in 3 seconds... enjoy :)')
                     setTimeout(() => {
                         const anchorAudio = document.createElement("a");
                         anchorAudio.target = "_blank";
@@ -411,7 +407,7 @@ export default function SearchInput() {
                         anchorAudio.click();
                         //window.open('https://storage.cloud.google.com/scfetch2/'+response.trimmedURL)
                         setIsFetching(false);
-                    }, 5000);
+                    }, 4000);
              
                 }).catch(err => {
                     showNotification('error', 'Oopss, It seems there was an issue with trimming the origin file! Please try a again!!');
