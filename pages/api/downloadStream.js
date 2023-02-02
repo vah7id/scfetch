@@ -5,7 +5,24 @@ const axios = require('axios').default
 const path = require('path');
 const cwd = path.join(__dirname, '..');
 const {Storage} = require('@google-cloud/storage');
-const stream = require('stream');
+
+
+const storeFS = (stream, filename ) => {
+    const uploadDir = '/tmp';
+    const path = `${uploadDir}/${filename}`;
+    return new Promise((resolve, reject) =>
+      stream
+        .on('error', error => {
+          if (stream.truncated)
+            // delete the truncated file
+            fs.unlinkSync(path);
+          reject(error);
+        })
+        .pipe(fs.createWriteStream(path))
+        .on('error', error => reject(error))
+        .on('finish', () => resolve({ path }))
+    );
+  }
 
 export default function handler(req, res) {
     const SOUNDCLOUD_URL = req.query.scurl;
@@ -17,12 +34,21 @@ export default function handler(req, res) {
 
     scdl.download(SOUNDCLOUD_URL,CLIENT_ID).then(async(stream) => {
             const filePath = `${req.query.title}`;
-            const file = myBucket.file(filePath);
-            stream.pipe(file.createWriteStream());
-
-            res.status(200).json({ 
-                downloadURL: req.query.title 
-            }); 
+            storeFS(stream, filePath);
+            setTimeout(() => {
+              
+                async function uploadFromMemory() {
+                    await myBucket.upload('/tmp/'+req.query.title, {destination: req.query.title});
+                    res.status(200).json({ 
+                        downloadURL: req.query.title 
+                    });  
+                }
+                
+                  uploadFromMemory().catch(console.error);
+    
+                
+            }, 2000);
+            
 
     }).catch(err => {
         res.status(400).json({ err });    
