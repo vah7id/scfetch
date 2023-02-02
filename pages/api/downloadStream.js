@@ -39,6 +39,7 @@ export default function handler(req, res) {
               
                 async function uploadFromMemory() {
                     await myBucket.upload('/tmp/'+req.query.title, {destination: req.query.title});
+                    
                     res.status(200).json({ 
                         downloadURL: req.query.title 
                     });  

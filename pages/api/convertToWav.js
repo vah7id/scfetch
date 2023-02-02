@@ -38,6 +38,7 @@ export default function handler(req, res) {
               
                 async function uploadFromMemory() {
                     await myBucket.upload('/tmp/'+req.query.title.replace('mp3','wav'), {destination: req.query.title.replace('mp3','wav')});
+                    
                     res.status(200).json({ 
                         downloadURL: req.query.title 
                     });  
