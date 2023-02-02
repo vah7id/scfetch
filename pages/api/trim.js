@@ -29,7 +29,7 @@ export default async function handler(req, res) {
 
     
     const destFileTmp = path.join("/tmp", `trimmed-${sourceAudioFile}`) 
-    const destFileCloud = "trimmed-"+new Date().getTime()+sourceAudioFile;
+    const destFileCloud = "trimmed-"+sourceAudioFile;
     const conv = ffmpeg({ source: tmp1});
     conv
     .setStartTime(start) //Can be in "HH:MM:SS" format also
