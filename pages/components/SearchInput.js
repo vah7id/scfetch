@@ -249,6 +249,10 @@ export default function SearchInput() {
                 }, 3000);
             }
         }).catch(err => {
+            setDlBtn({
+                disabled: false,
+                label: 'DOWNLOAD'
+            })
             console.log(err.message)
             setIsFetching(false);
             showNotification('error', 'Oops, Unfortunately we cannot fetch the URL!! Please try again!!!');
