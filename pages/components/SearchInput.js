@@ -204,22 +204,40 @@ export default function SearchInput() {
     }
 
     const convertToWav = () => {
-        if(trackData.downloadURL !== "") {
-            setIsFetching(true);
-            setDlBtn({
-                disabled: true,
-                label: 'LOADING...'
-            })
-            setTimeout(() => {
-                // loading (put some ads here)
-                window.open('https://storage.cloud.google.com/scfetch2/'+trackData.downloadURL.replace('mp3','wav'), "_blank");
-                setDlBtn({
+        setIsFetching(true);
+        setConvertBtn({
+            disabled: true,
+            label: 'LOADING...'
+        })
+        fetch(`/api/convertToWav?scurl=${url}&title=`+trackData.downloadURL).then(response => response.json()).then(response => {
+            setIsFetching(false);
+            if(response.err) {
+                setConvertBtn({
                     disabled: false,
-                    label: 'DOWNLOAD'
+                    label: 'CONVERT TO WAV'
                 })
+                showNotification('error', response.err.message);
                 setIsFetching(false);
-            }, 3000);
-        }
+                showNotification('error', 'Oops, Unfortunately we cannot fetch the URL!! Please try again!!!');
+            } else {
+                setTimeout(() => {
+                    window.open('https://storage.cloud.google.com/scfetch2/'+response.downloadURL.replace('mp3','wav'), "_blank");
+                    setConvertBtn({
+                        disabled: false,
+                        label: 'CONVERT TO WAV'
+                    })
+                    setIsFetching(false);
+                }, 3000);
+            }
+        }).catch(err => {
+            setConvertBtn({
+                disabled: false,
+                label: 'CONVERT TO WAV'
+            })
+            console.log(err.message)
+            setIsFetching(false);
+            showNotification('error', 'Oops, Unfortunately we cannot fetch the URL!! Please try again!!!');
+        });
     }
 
     const handleDownload = () => {
@@ -259,83 +277,104 @@ export default function SearchInput() {
         });
     }
 
+    const donwloadInBackground = () => {
+        return fetch(`/api/downloadStream?scurl=${url}&title=`+trackData.downloadURL).then(response => response.json()).then(response => {
+            if(response.err) {
+               return {status: 'failed'};
+            } else {
+                return {status: 'success'};
+            }
+        }).catch(err => {
+            return {status: 'failed'};
+        });
+    }
+
 
     const openAudioEditor = async() => {
-        
         if(wavesurfer === null) {
             setIsFetching(true);
-            setTrimButtonVisible(true)
-            let WaveSurfer = (await import("wavesurfer.js")).default;
-            var RegionsPlugin = await require("wavesurfer.js/dist/plugin/wavesurfer.regions.min.js");
-            const wavesurferInstance = WaveSurfer.create({
-                container: '#waveform',
-                waveColor: '#1976d2',
-                progressColor: '#A8DBA8',
-                backend: 'MediaElement',
-                plugins: [
-                    RegionsPlugin.create({
-                        regionsMinLength: 1,
-                        regions: [
-                            {
-                                start: regionPoints.start,
-                                end: regionPoints.end,
-                                loop: true,
-                                color: 'rgb(156 200 255 / 50%)'
-                            }
-                        ],
-                        dragSelection: {
-                            slop: 5
-                        }
-                    })
-                ]
-            });
 
-
-           wavesurferInstance.load('https://storage.cloud.google.com/scfetch2/'+trackData.downloadURL, [
-           0.0218, 0.0183, 0.0165, 0.0198, 0.2137, 0.2888, 0.2313, 0.15, 0.2542, 0.2538, 0.2358, 0.1195, 0.1591, 0.2599, 0.2742, 0.1447, 0.2328, 0.1878, 0.1988, 0.1645, 0.1218, 0.2005, 0.2828, 0.2051, 0.1664, 0.1181, 0.1621, 0.2966, 0.189, 0.246, 0.2445, 0.1621, 0.1618, 0.189, 0.2354, 0.1561, 0.1638, 0.2799, 0.0923, 0.1659, 0.1675, 0.1268, 0.0984, 0.0997, 0.1248, 0.1495, 0.1431, 0.1236, 0.1755, 0.1183, 0.1349, 0.1018, 0.1109, 0.1833, 0.1813, 0.1422, 0.0961, 0.1191, 0.0791, 0.0631, 0.0315, 0.0157, 0.0166, 0.0108]);
-            
-            wavesurferInstance.on('ready', async () => {
-                console.log('ready')
-                    wavesurferInstance.play();
-                    setPlaying(true);
+            fetch(`/api/downloadStream?scurl=${url}&title=`+trackData.downloadURL).then(response => response.json()).then(async(response) => {
+                if(response.err) {
                     setIsFetching(false);
-                    const regionId = Object.keys(wavesurferInstance.regions.list)[0];
-                    const region = wavesurferInstance.regions.list[regionId];
-                    if(region) {
-                        setRegion(region);
+                    showNotification('error', 'Oops, Unfortunately we cannot fetch the URL!! Please try again!!!');
+                } else {
+                setTrimButtonVisible(true)
+                let WaveSurfer = (await import("wavesurfer.js")).default;
+                var RegionsPlugin = await require("wavesurfer.js/dist/plugin/wavesurfer.regions.min.js");
+                const wavesurferInstance = WaveSurfer.create({
+                    container: '#waveform',
+                    waveColor: '#1976d2',
+                    progressColor: '#A8DBA8',
+                    backend: 'MediaElement',
+                    plugins: [
+                        RegionsPlugin.create({
+                            regionsMinLength: 1,
+                            regions: [
+                                {
+                                    start: regionPoints.start,
+                                    end: regionPoints.end,
+                                    loop: true,
+                                    color: 'rgb(156 200 255 / 50%)'
+                                }
+                            ],
+                            dragSelection: {
+                                slop: 5
+                            }
+                        })
+                    ]
+                });
+    
+    
+               wavesurferInstance.load('https://storage.cloud.google.com/scfetch2/'+trackData.downloadURL, [
+               0.0218, 0.0183, 0.0165, 0.0198, 0.2137, 0.2888, 0.2313, 0.15, 0.2542, 0.2538, 0.2358, 0.1195, 0.1591, 0.2599, 0.2742, 0.1447, 0.2328, 0.1878, 0.1988, 0.1645, 0.1218, 0.2005, 0.2828, 0.2051, 0.1664, 0.1181, 0.1621, 0.2966, 0.189, 0.246, 0.2445, 0.1621, 0.1618, 0.189, 0.2354, 0.1561, 0.1638, 0.2799, 0.0923, 0.1659, 0.1675, 0.1268, 0.0984, 0.0997, 0.1248, 0.1495, 0.1431, 0.1236, 0.1755, 0.1183, 0.1349, 0.1018, 0.1109, 0.1833, 0.1813, 0.1422, 0.0961, 0.1191, 0.0791, 0.0631, 0.0315, 0.0157, 0.0166, 0.0108]);
+                
+                wavesurferInstance.on('ready', async () => {
+                    console.log('ready')
+                        wavesurferInstance.play();
+                        setPlaying(true);
+                        setIsFetching(false);
+                        const regionId = Object.keys(wavesurferInstance.regions.list)[0];
+                        const region = wavesurferInstance.regions.list[regionId];
+                        if(region) {
+                            setRegion(region);
+                        }
+                });
+    
+                wavesurferInstance.on('region-created', (region) => {
+                    var regions = region.wavesurfer.regions.list;
+                    var keys = Object.keys(regions);
+                    if(keys.length > 1){
+                        regions[keys[1]].remove();
                     }
-            });
-
-            wavesurferInstance.on('region-created', (region) => {
-                var regions = region.wavesurfer.regions.list;
-                var keys = Object.keys(regions);
-                if(keys.length > 1){
-                    regions[keys[1]].remove();
-                }
-            })
-
-            wavesurferInstance.on('region-updated', (region) => {
-                var regions = region.wavesurfer.regions.list;
-                var keys = Object.keys(regions);
-                if(keys.length > 1){
-                    regions[keys[1]].remove();
-                }
-                setRegionPoints({
-                    start: region.start,
-                    end: region.end
                 })
+    
+                wavesurferInstance.on('region-updated', (region) => {
+                    var regions = region.wavesurfer.regions.list;
+                    var keys = Object.keys(regions);
+                    if(keys.length > 1){
+                        regions[keys[1]].remove();
+                    }
+                    setRegionPoints({
+                        start: region.start,
+                        end: region.end
+                    })
+                })
+    
+                wavesurferInstance.on('pause', () => {
+                    setPlaying(false);
+                })
+    
+                wavesurferInstance.on('play', () => {
+                    setPlaying(true);
+                })
+    
+    
+                setWaveSurfer(wavesurferInstance);
+            }
+            }).catch(err => {
+                showNotification('error', 'Cannot fetch the audio content to load!!!');
             })
-
-            wavesurferInstance.on('pause', () => {
-                setPlaying(false);
-            })
-
-            wavesurferInstance.on('play', () => {
-                setPlaying(true);
-            })
-
-
-            setWaveSurfer(wavesurferInstance);
         }
     }
 
@@ -354,10 +393,7 @@ export default function SearchInput() {
                 wavesurfer.pause();
                 fetch(`/api/trim?filePath=${trackData.downloadURL}&start=${region.start}&duration=${region.end - region.start}`).then(response => response.json()).then(response => {
                     setTimeout(() => {
-                        var anchorAudio = document.createElement("a");
-                        anchorAudio.href = 'https://storage.cloud.google.com/scfetch2/'+response.trimmedURL
-                        anchorAudio.download = response.trimmedURL;
-                        anchorAudio.click();
+                        window.open('https://storage.cloud.google.com/scfetch2/'+response.trimmedURL)
                         setIsFetching(false);
                     }, 5000);
              

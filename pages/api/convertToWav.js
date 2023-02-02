@@ -1,43 +1,56 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
-const ffmpeg = require('fluent-ffmpeg');
+const scdl = require('soundcloud-downloader').default
+const fs = require('fs')
+const axios = require('axios').default
+const path = require('path');
+const cwd = path.join(__dirname, '..');
+const {Storage} = require('@google-cloud/storage');
 
-ffmpeg.setFfmpegPath(ffmpegInstaller.path);
-// console.log(ffmpegInstaller.path, ffmpegInstaller.version);
-
-
-import path from "path";
-
-function isMp3File(wavFilename) {
-    const ext = path.extname(wavFilename);
-    return ext === ".mp3";
+const storeFS = (stream, filename ) => {
+    const uploadDir = '/tmp';
+    const path = `${uploadDir}/${filename}`;
+    return new Promise((resolve, reject) =>
+      stream
+        .on('error', error => {
+          if (stream.truncated)
+            // delete the truncated file
+            fs.unlinkSync(path);
+          reject(error);
+        })
+        .pipe(fs.createWriteStream(path))
+        .on('error', error => reject(error))
+        .on('finish', () => resolve({ path }))
+    );
   }
 
-function convertWavToWAV(mp3filePath) {
+export default function handler(req, res) {
+    const SOUNDCLOUD_URL = req.query.scurl;
+    const CLIENT_ID = "e2OoIxUtdZaNGNvJPRgMP4fHcUQ7qIeb";
+    const rootDir = path.join(process.cwd(), '/');
+
+    const storage = new Storage({projectId: 'scfetch-375920', keyFilename:path.join(rootDir, 'key.json')});
+    const myBucket = storage.bucket('scfetch2');
+
+    scdl.download(SOUNDCLOUD_URL,CLIENT_ID).then(async(stream) => {
+            const filePath = `${req.query.title.replace('mp3','wav')}`;
+            storeFS(stream, filePath);
+            setTimeout(() => {
+              
+                async function uploadFromMemory() {
+                    await myBucket.upload('/tmp/'+req.query.title.replace('mp3','wav'), {destination: req.query.title.replace('mp3','wav')});
+                    res.status(200).json({ 
+                        downloadURL: req.query.title 
+                    });  
+                }
+                
+                  uploadFromMemory().catch(console.error);
     
-    return new Promise((resolve, reject) => {
-        if (!isMp3File(mp3filePath)) {
-            throw new Error(`Not a mp3 file`);
-        }
-    const outputFile = mp3filePath.replace(".mp3", ".wav");
-        ffmpeg({
-            source: mp3filePath,
-        }).on("error", (err) => {
-            reject(err);
-        }).on("end", () => {
-            resolve(outputFile);
-        }).save(outputFile);
-    });
-}
+                
+            }, 2000);
+            
 
-
-export default async function handler(req, res) {
-    const sourceAudioFile = req.query.filePath;
-   
-    convertWavToWAV('https://storage.cloud.google.com/scfetch2/'+sourceAudioFile).then((wavFile => {
-        res.status(200).json(wavFile);
-    })).catch((err) => {
-        console.log(err)
-        res.status(400);
-    });
+    }).catch(err => {
+        res.status(400).json({ err });    
+    })
+    
   }
