@@ -10,7 +10,9 @@ const stream = require('stream');
 export default function handler(req, res) {
     const SOUNDCLOUD_URL = req.query.scurl;
     const CLIENT_ID = process.env.CLIENT_ID;
-    const storage = new Storage({projectId: 'scfetch-375920', keyFilename:'./key.json'});
+    const rootDir = path.join(process.cwd(), '/');
+
+    const storage = new Storage({projectId: 'scfetch-375920', keyFilename:path.join(rootDir, 'key.json')});
     const myBucket = storage.bucket('scfetch2');
 
     scdl.getInfo(SOUNDCLOUD_URL,CLIENT_ID).then(trackData => {
