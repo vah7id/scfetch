@@ -335,6 +335,7 @@ export default function SearchInput() {
                 fetch(`/api/trim?filePath=${trackData.downloadURL}&start=${region.start}&duration=${region.end - region.start}`).then(response => response.json()).then(response => {
                     setTimeout(() => {
                         var anchorAudio = document.createElement("a");
+                        anchorAudio.target = "_blank";
                         anchorAudio.href = 'https://storage.cloud.google.com/scfetch2/'+response.trimmedURL
                         anchorAudio.download = response.trimmedURL;
                         anchorAudio.click();
