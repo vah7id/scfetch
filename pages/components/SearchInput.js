@@ -11,125 +11,9 @@ import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
-import {TextField, Button, Typography, Card, CardMedia, CardContent, BottomNavigation, BottomNavigationAction, Stack, IconButton, Skeleton, LinearProgress, Backdrop, CircularProgress} from '@mui/material';
+import {TextField, Button, Typography, Card, CardMedia, CardContent, BottomNavigation, BottomNavigationAction, Stack, IconButton, Skeleton, LinearProgress, Backdrop, CircularProgress, Grid, Divider, Breadcrumbs, Link} from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
-
-function downloadMp3(buffer) {
-    console.log(buffer)
-    var MP3Blob = analyzeAudioBuffer(buffer);
-    console.log('here is your mp3 url:');
-    console.log(URL.createObjectURL(MP3Blob));
-  }
-  
-  function analyzeAudioBuffer(aBuffer) {
-      let numOfChan = aBuffer.numberOfChannels,
-          btwLength = aBuffer.length * numOfChan * 2 + 44,
-          btwArrBuff = new ArrayBuffer(btwLength),
-          btwView = new DataView(btwArrBuff),
-          btwChnls = [],
-          btwIndex,
-          btwSample,
-          btwOffset = 0,
-          btwPos = 0;
-      setUint32(0x46464952); // "RIFF"
-      setUint32(btwLength - 8); // file length - 8
-      setUint32(0x45564157); // "WAVE"
-      setUint32(0x20746d66); // "fmt " chunk
-      setUint32(16); // length = 16
-      setUint16(1); // PCM (uncompressed)
-      setUint16(numOfChan);
-      setUint32(aBuffer.sampleRate);
-      setUint32(aBuffer.sampleRate * 2 * numOfChan); // avg. bytes/sec
-      setUint16(numOfChan * 2); // block-align
-      setUint16(16); // 16-bit
-      setUint32(0x61746164); // "data" - chunk
-      setUint32(btwLength - btwPos - 4); // chunk length
-  
-      for (btwIndex = 0; btwIndex < aBuffer.numberOfChannels; btwIndex++)
-          btwChnls.push(aBuffer.getChannelData(btwIndex));
-  
-      while (btwPos < btwLength) {
-          for (btwIndex = 0; btwIndex < numOfChan; btwIndex++) {
-              // interleave btwChnls
-              btwSample = Math.max(-1, Math.min(1, btwChnls[btwIndex][btwOffset])); // clamp
-              btwSample = (0.5 + btwSample < 0 ? btwSample * 32768 : btwSample * 32767) | 0; // scale to 16-bit signed int
-              btwView.setInt16(btwPos, btwSample, true); // write 16-bit sample
-              btwPos += 2;
-          }
-          btwOffset++; // next source sample
-      }
-  
-      let wavHdr = lamejs.WavHeader.readHeader(new DataView(btwArrBuff));
-  
-      //Stereo
-      let data = new Int16Array(btwArrBuff, wavHdr.dataOffset, wavHdr.dataLen / 2);
-      let leftData = [];
-      let rightData = [];
-      for (let i = 0; i < data.length; i += 2) {
-                   leftData.push(data[i]);
-                   rightData.push(data[i + 1]);
-      }
-      var left = new Int16Array(leftData);
-      var right = new Int16Array(rightData);
-  
-  
-  
-      //STEREO
-      if (wavHdr.channels===2)
-          return bufferToMp3(wavHdr.channels, wavHdr.sampleRate,  left,right);
-      //MONO
-      else if (wavHdr.channels===1)
-          return bufferToMp3(wavHdr.channels, wavHdr.sampleRate,  data);
-      
-  
-      function setUint16(data) {
-          btwView.setUint16(btwPos, data, true);
-          btwPos += 2;
-      }
-  
-      function setUint32(data) {
-          btwView.setUint32(btwPos, data, true);
-          btwPos += 4;
-      }
-    }
-  
-    function bufferToMp3(channels, sampleRate, left, right = null) {
-      var buffer = [];
-      var mp3enc = new lamejs.Mp3Encoder(channels, sampleRate, 128);
-      var remaining = left.length;
-      var samplesPerFrame = 1152;
-    
-    
-      for (var i = 0; remaining >= samplesPerFrame; i += samplesPerFrame) {
-    
-          if (!right)
-          {
-              var mono = left.subarray(i, i + samplesPerFrame);
-              var mp3buf = mp3enc.encodeBuffer(mono);
-          }
-          else {
-              var leftChunk = left.subarray(i, i + samplesPerFrame);
-              var rightChunk = right.subarray(i, i + samplesPerFrame);
-              var mp3buf = mp3enc.encodeBuffer(leftChunk,rightChunk);
-          }
-              if (mp3buf.length > 0) {
-                      buffer.push(mp3buf);//new Int8Array(mp3buf));
-              }
-              remaining -= samplesPerFrame;
-      }
-      var d = mp3enc.flush();
-      if(d.length > 0){
-              buffer.push(new Int8Array(d));
-      }
-    
-      var mp3Blob = new Blob(buffer, {type: 'audio/mpeg'});
-      //var bUrl = window.URL.createObjectURL(mp3Blob);
-    
-      // send the download link to the console
-      //console.log('mp3 download:', bUrl);
-      return mp3Blob;
-    
-    }
+import HomeIcon from '@mui/icons-material/Home';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -266,7 +150,7 @@ export default function SearchInput() {
                 setIsFetching(false);
                 showNotification('error', 'Oops, Unfortunately we cannot fetch the URL!! Please try again!!!');
             } else {
-                showNotification('info', 'Download starts in 2 seconds... enjoy :)')
+                showNotification('info', 'Bingo!!, Download will start in 2 seconds... Enjoy :)')
 
                 setTimeout(() => {
                     //window.open('https://storage.cloud.google.com/scfetch2/'+response.downloadURL, "_blank");
@@ -398,7 +282,7 @@ export default function SearchInput() {
             if(region) {
                 wavesurfer.pause();
                 fetch(`/api/trim?filePath=${trackData.downloadURL}&start=${region.start}&duration=${region.end - region.start}`).then(response => response.json()).then(response => {
-                    showNotification('info', 'Download starts in 3 seconds... enjoy :)')
+                    showNotification('info', 'Bingo!!, Download will start in 3 seconds... Enjoy :)')
                     setTimeout(() => {
                         const anchorAudio = document.createElement("a");
                         anchorAudio.target = "_blank";
@@ -541,6 +425,52 @@ export default function SearchInput() {
                 </Button>
                 <Alert style={{marginTop: '25px', padding: '5px 10px', boxShadow: 'none', opacity:"0.6"}} variant="outlined" severity="info">Adjust the blue area by using your mouse to set the start and end time to crop!</Alert>
                 </>}
+
+                    <Box sx={{ width: 800, paddingTop: '25px', color: '#ccc' }}>
+                <Breadcrumbs sx={{ width: '100%', fontSize: '14px', marginTop: '250px', marginBottom: '12px', opacity: 0.5 }} aria-label="breadcrumb">
+                    <Link
+                    underline="hover"
+                    sx={{ display: 'flex', alignItems: 'center' }}
+                    href="/"
+                    >
+                    <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+                    Home
+                    </Link>
+                    <Link
+                    underline="hover"
+                    sx={{ display: 'flex', alignItems: 'center' }}
+                    color="inherit"
+                    href="/terms"
+                    >
+                    Terms & Conditions
+                    </Link>
+                   
+                    <Link
+                    underline="hover"
+                    sx={{ display: 'flex', alignItems: 'center' }}
+                    color="inherit"
+                    target="_blank"
+                    href="https://blog.landr.com/sampling-music-the-complete-guide/"
+                    >
+                     Sampling Music Guide
+                    </Link>
+                    <Link
+                    underline="hover"
+                    sx={{ display: 'flex', alignItems: 'center' }}
+                    color="inherit"
+                    target="_blank"
+                    href="https://github.com/vah7id/scfetch"
+                    >
+                    Github
+                    </Link>
+                </Breadcrumbs>
+                </Box>
+                <Divider light />
+                <Stack sx={{ width: 800, paddingTop: '25px', color: '#ccc' }} direction="row" spacing={4}>
+                <Typography variant="caption">
+                    <b>Disclaimer:</b> SoundCloud Downloader is an online tool to download SoundCloud tracks and music. SoundCloud allows you to listen to as many tracks as possible, but it does not enable soundtrack downloads. scfetch.app is not responsible for any media downloaded from here. SCFetch does not Host any SoundCloud Songs on our Server, and SCFetch allows you to download Public Domain SoundCloud tracks for which the corresponding owner gave Download permissions. Kindly read our "Terms of Service" before using this service. By using SCFetch, you have accepted the Terms & conditions
+                    </Typography>
+                </Stack>
             </Box>
 
             <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} open={openSnackbar} autoHideDuration={5000} onClose={handleSnackbarClose}>
@@ -555,7 +485,7 @@ export default function SearchInput() {
                 >
                 <CircularProgress color="inherit" />
             </Backdrop>}
-
+ 
         </Box>
     )
   }
