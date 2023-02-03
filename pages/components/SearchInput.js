@@ -468,7 +468,7 @@ export default function SearchInput() {
                 <Divider light />
                 <Stack sx={{ width: 800, paddingTop: '25px', color: '#ccc' }} direction="row" spacing={4}>
                 <Typography variant="caption">
-                    <b>Disclaimer:</b> SoundCloud Downloader is an online tool to download SoundCloud tracks and music. SoundCloud allows you to listen to as many tracks as possible, but it does not enable soundtrack downloads. scfetch.app is not responsible for any media downloaded from here. SCFetch does not Host any SoundCloud Songs on our Server, and SCFetch allows you to download Public Domain SoundCloud tracks for which the corresponding owner gave Download permissions. Kindly read our "Terms of Service" before using this service. By using SCFetch, you have accepted the Terms & conditions
+                    <b>Disclaimer:</b> SoundCloud Downloader is an online tool to download SoundCloud tracks and music. SoundCloud allows you to listen to as many tracks as possible, but it does not enable soundtrack downloads. scfetch.app is not responsible for any media downloaded from here. SCFetch does not Host any SoundCloud Songs on our Server, and SCFetch allows you to download Public Domain SoundCloud tracks for which the corresponding owner gave Download permissions. Kindly read our Terms of Service before using this service. By using SCFetch, you have accepted the Terms & conditions
                     </Typography>
                 </Stack>
             </Box>
