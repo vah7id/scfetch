@@ -1,21 +1,43 @@
 import { Typography } from '@mui/material'
 import Head from 'next/head'
 import Link from 'next/link'
+import { useEffect } from 'react'
 import styles from '../../styles/Home.module.css'
 
 export default function Home() {
   return (
     <div className={styles.container}>
       <Head>
-        <title>Soundcloud Downloader MP3 / WAV formats / Trim & Crop Audio Tool / Sample from Soundcloud</title>
-        <meta name="description" content="Soundcloud Downloader MP3 / WAV formats / Trim & Crop Audio Tool / Sample from Soundcloud" />
-        <link rel="icon" href="/favicon.ico" />
+      <title>SCFetch Soundcloud Downloader MP3 / WAV Converter Terms</title>
+
+        <meta name="description" content="Soundcloud Downloader MP3 / WAV formats / Sample from Soundcloud Terms" />
+        <link rel="icon" href="/favicon.png" />
+        <meta name="keywords" content="soundcloud to mp3, soundcloud wav, soundcloud convert wav, soundcloud download, soundcloud downloader, soundcloud sampler, soundcloud crop trim" />
+          <meta name="googlebot" content="index, follow" />
+          <meta name="robots" content="index, follow" />
+          <link rel="apple-touch-icon-precomposed" href="/favicon.png" />
+          <link rel="shortcut icon" href="/favicon.png" />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content="Check this out! I just downloaded music for free!" />
+          <meta name="twitter:description" content="Check this out! I just downloaded music for free!" />
+          <meta name="twitter:image:src" content="/favicon.png" />
+        {/*<meta property="fb:admins" content="100002861414139">
+          <meta property="fb:app_id" content="503426229739677">*/}
+          <meta property="og:url" content="https://scfetch.app" />
+          <meta property="og:type" content="article" />
+          <meta property="og:title" content="Check this out! I just downloaded music for free!" />
+          <meta property="og:image" content="/favicon.png"/>
+          <meta property="og:description" content="It's so easy!"/>
+          <meta property="og:site_name" content="SCFetch.app" />
+          <meta itemProp="name" content="Soundcloud Downloader and SoundCloud to MP3 / WAV Converter, Soundcloud Sampler Crop Trim From URL" />
+          <meta itemProp="description" content="Fast and Free SoundCloud to MP3 / WAV conversion and download via SCFetch.app. You don&#039;t need software or an account, just the SoundCloud URL." />
+          <meta itemProp="image" content="./favicon.png" />
       </Head>
 
       <main className={styles.main}>
-        <h2 className={styles.title}>
+        <h1 className={styles.title}>
           <Link href="/">SCFetch</Link>: Soundcloud URL Downloader & Sampler
-        </h2>
+        </h1>
         <Typography variant="body2" style={{ opacity: '0.6', textAlign: 'center', margin: '16px 0 40px 0' }}>
           Download High Quality Mp3 (128 & 320 kbps) and WAV (raw) format from Soundcloud Using SCFetch &<br />easily trim your audio by crop tool for sampling purposes! Enjoy :)
         </Typography>

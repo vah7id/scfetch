@@ -15,15 +15,22 @@
     "@mui/icons-material": "^5.11.0",
     "@mui/material": "^5.11.5",
     "@types/react": "^18.0.27",
+    "@vercel/analytics": "^0.1.8",
     "fluent-ffmpeg": "^2.1.2",
+    "ga-gtag": "^1.1.7",
+    "http-proxy": "^1.18.1",
+    "music-tempo": "^1.0.3",
     "next": "12.0.7",
     "node-audio-peaks": "^4.0.2",
     "react": "17.0.2",
     "react-dom": "17.0.2",
+    "react-share": "^4.4.1",
     "soundcloud-downloader": "^1.0.0",
+    "spotify-web-api-node": "^5.0.2",
     "typescript": "^4.9.4",
     "wavesurfer-react": "^2.2.2",
-    "wavesurfer.js": "^6.4.0"
+    "wavesurfer.js": "^6.4.0",
+    "web-audio-api": "^0.2.2"
   },
   "devDependencies": {
     "eslint": "8.4.0",

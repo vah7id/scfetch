@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap');
 
+
 .container {
   padding: 0 2rem;
 }
@@ -46,11 +47,18 @@
 .title a:active {
   text-decoration: underline;
 }
+.artwork {
+  max-width: 150px;
+  min-width: 150px;
+}
+.logo {
+  vertical-align: middle;
+}
 
 .title {
   margin: 0;
   line-height: 1.15;
-  font-size: 2rem;
+  font-size: 1.7rem;
 }
 
 .title,
@@ -116,9 +124,63 @@
   margin-left: 0.5rem;
 }
 
+.ShareContainer {
+  text-align: left;
+  margin-top: -10px;
+}
+
+.shareNetwork {
+  vertical-align: top;
+  display: inline-block;
+  margin-right: 10px;
+  margin-top: 20px;
+  text-align: center;
+}
+
+.shareNetwork__share-count {
+  display: inline-flex;
+  justify-content: center;
+  white-space: nowrap;
+  overflow: visible;
+  width: 0;
+  margin-top: 3px;
+  font-size: 12px;
+}
+
+.shareNetwork__share-button {
+  cursor: pointer;
+}
+
+.shareNetwork__share-button:hover:not(:active) {
+  opacity: 0.75;
+}
+
+.shareNetwork__custom-icon {
+  width:32px;
+  height:32px;
+}
+
+.exportButton {
+  float:right; 
+  margin-top: -42px !important;
+}
+
 @media (max-width: 600px) {
   .grid {
     width: 100%;
     flex-direction: column;
+  }
+
+  
+}
+
+@media (max-width: 768px) {
+  .exportButton {
+    margin-top: 20px !important;
+    margin-bottom: 20px !important;
+    width: 100% !important;
+  }
+  .artwork {
+    display: none !important;
   }
 }

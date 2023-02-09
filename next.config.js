@@ -1,3 +1,15 @@
+let proxy = require('next/dist/compiled/http-proxy')
+function Proxy(options) {
+  console.log('PROXY STUB')
+  options = options || {}
+  options.secure = false
+
+  return new proxy(options)
+}
+
+// @ts-nocheck
+proxy.exports = Proxy
+
 module.exports = {
   reactStrictMode: true,
     async headers() {
@@ -13,7 +25,7 @@ module.exports = {
       }]
   },
   api: {
-    responseLimit: false,
+    responseLimit: '100mb',
     // responseLimit: '8mb',
   }
 }

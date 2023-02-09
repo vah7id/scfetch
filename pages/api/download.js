@@ -9,55 +9,39 @@ const stream = require('stream');
 
 export default function handler(req, res) {
     const SOUNDCLOUD_URL = req.query.scurl;
-    const CLIENT_ID = "REPLACE_YOUR_CLIENT_ID";
+    const CLIENT_ID = "e2OoIxUtdZaNGNvJPRgMP4fHcUQ7qIeb";
     const rootDir = path.join(process.cwd(), '/');
 
     const storage = new Storage({projectId: 'scfetch-375920', keyFilename:path.join(rootDir, 'key.json')});
     const myBucket = storage.bucket('scfetch2');
 
     scdl.getInfo(SOUNDCLOUD_URL,CLIENT_ID).then(trackData => {
-        //scdl.download(SOUNDCLOUD_URL,CLIENT_ID).then(async(stream) => {
-            const filePath = `${trackData.title.replace(/ /g, '')}-${trackData.id}.mp3`;
-            //const filePath2 = `${trackData.title.replace(/ /g, '')}-${trackData.id}.wav`;
-            //const file = myBucket.file(filePath);
-            //const file2 = myBucket.file(filePath2);
-            //stream.pipe(file.createWriteStream());
-            //stream.pipe(file2.createWriteStream());
-
-
-            res.status(200).json({ 
-                artist: trackData.user.username, 
-                title: trackData.title,
-                artwork: trackData.artwork_url, 
-                id: trackData.id,
-                downloadURL: filePath 
-            }); 
-
-            /*const passthroughStream = new stream.PassThrough();
-            passthroughStream.write(stream);
-            passthroughStream.end();
-            console.log('dfsfdsfdsfs22222')
-
-            console.log(stream)
-            async function streamFileUpload() {
-                console.log('dfsfdsfdsfs')
-                passthroughStream.pipe(file.createWriteStream()).on('finish', () => {
+            const filePath = `${trackData.title.replace(/ /g, '').replace('&','-').replace('&','-').replace('&','-').replace('&','-').replace('&','-').replace('&','-').replace('&','-').replace('&','-')}-${trackData.id}.mp3`;
+            console.log(trackData)
+            if(trackData.waveform_url) {
+                fetch(trackData.waveform_url).then(resp => resp.json()).then(resp => {
+                    const waveFormSamples = resp.samples.map(sample => sample/500)
                     res.status(200).json({ 
                         artist: trackData.user.username, 
                         title: trackData.title,
                         artwork: trackData.artwork_url, 
                         id: trackData.id,
-                        downloadURL: filePath 
+                        downloadURL: filePath,
+                        waveForm: waveFormSamples
                     }); 
-                });
-              
-                console.log(`${destFileName} uploaded to ${bucketName}`);
-              }
-              
-              streamFileUpload().catch(console.error);*/
-            //stream.pipe(fs.createWriteStream(path.join(cwd, filePath)))
+                })
+            } else {
+                res.status(200).json({ 
+                    artist: trackData.user.username, 
+                    title: trackData.title,
+                    artwork: trackData.artwork_url, 
+                    id: trackData.id,
+                    downloadURL: filePath,
+                    waveForm: []
+                }); 
+            }
             
-        //}).catch(err => res.status(400).json({ err }))
+          
     }).catch(err => {
         res.status(400).json({ err });    
     })

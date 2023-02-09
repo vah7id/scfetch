@@ -46,7 +46,7 @@ export default async function handler(req, res) {
             //var strings = fs.readFileSync(destFileTmp).toString();
             async function uploadFromMemory() {
                 await myBucket.upload(destFileTmp, {destination: destFileCloud});
-                fs.unlinkSync(destFileTmp);
+                await myBucket.file(destFileCloud).makePublic();
 
                 res.status(200).json({trimmedURL: destFileCloud});
              

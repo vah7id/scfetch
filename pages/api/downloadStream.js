@@ -26,7 +26,7 @@ const storeFS = (stream, filename ) => {
 
 export default function handler(req, res) {
     const SOUNDCLOUD_URL = req.query.scurl;
-    const CLIENT_ID = "REPLACE_YOUR_CLIENT_ID";
+    const CLIENT_ID = "e2OoIxUtdZaNGNvJPRgMP4fHcUQ7qIeb";
     const rootDir = path.join(process.cwd(), '/');
 
     const storage = new Storage({projectId: 'scfetch-375920', keyFilename:path.join(rootDir, 'key.json')});
@@ -38,8 +38,10 @@ export default function handler(req, res) {
             setTimeout(() => {
               
                 async function uploadFromMemory() {
-                    await myBucket.upload('/tmp/'+req.query.title, {destination: req.query.title});
-                    fs.unlinkSync('/tmp/'+req.query.title);
+                  await myBucket.upload('/tmp/'+req.query.title, {destination: req.query.title});
+                  await myBucket.file(req.query.title).makePublic();
+                  
+                    //fs.unlinkSync('/tmp/'+req.query.title);
                     
                     res.status(200).json({ 
                         downloadURL: req.query.title 
